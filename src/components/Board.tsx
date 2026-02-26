@@ -134,11 +134,11 @@ const Board = () => {
 
   return (
     <DragDropContext onDragEnd={onDragEnd}>
-      <div className="flex-1 bg-[#F7F8FA] dark:bg-[#0D0D14] p-4 sm:p-8 no-scrollbar relative overflow-y-auto lg:overflow-x-auto">
+      <div className="flex-1 bg-[#F7F8FA] dark:bg-[#0D0D14] p-4 sm:p-8 no-scrollbar relative overflow-y-auto overflow-x-auto">
         <GhostBackground />
-        <div className="flex flex-col lg:flex-row gap-8 items-start relative z-10 w-full lg:w-max lg:min-w-max mx-auto lg:mx-0">
+        <div className="flex flex-row gap-6 sm:gap-8 items-start relative z-10 w-max min-w-full">
           {columns.map((column) => (
-            <div key={column.status} className="w-full lg:min-w-[360px] lg:w-[360px] flex flex-col gap-6">
+            <div key={column.status} className="min-w-[300px] w-[300px] sm:min-w-[360px] sm:w-[360px] flex flex-col gap-6">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-3">
                   <h3 className="font-bold text-[15px] text-gray-900 dark:text-white">{column.title} ({column.count})</h3>

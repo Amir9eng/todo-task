@@ -1,28 +1,29 @@
 'use client';
 
-import React, { useRef, useMemo } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
+import { useRef, useEffect } from 'react';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { MeshDistortMaterial, Sphere, Float } from '@react-three/drei';
 import * as THREE from 'three';
 import { useTasks } from '../context/TaskContext';
 
+// Shared mouse position in normalized device coords (-1 to 1)
+const mouseNDC = { x: 0, y: 0 };
+
 const GhostBlob = ({ size = 2, speed = 3, lag = 0.05, opacity = 0.1, color: customColor }: { size?: number, speed?: number, lag?: number, opacity?: number, color?: string }) => {
   const meshRef = useRef<THREE.Mesh>(null);
   const { theme } = useTasks();
-  
-  // Target position based on mouse
   const targetPos = useRef(new THREE.Vector3(0, 0, 0));
+  const { viewport } = useThree();
 
   useFrame((state) => {
     if (meshRef.current) {
-      // Use much larger multipliers to ensure they can reach the edges of the board.
-      // Screen aspect ratio is roughly 2:1, so we map accordingly.
-      targetPos.current.set(state.mouse.x * 15, state.mouse.y * 10, -3);
-      
-      // Smoothly interpolate the blob position towards the mouse with specific lag
+      // Map NDC to world space using viewport size
+      targetPos.current.set(
+        mouseNDC.x * viewport.width * 0.5,
+        mouseNDC.y * viewport.height * 0.5,
+        -3
+      );
       meshRef.current.position.lerp(targetPos.current, lag);
-      
-      // Add some floating rotation
       meshRef.current.rotation.x = state.clock.getElapsedTime() * (0.05 * speed);
       meshRef.current.rotation.y = state.clock.getElapsedTime() * (0.1 * speed);
     }
@@ -52,6 +53,28 @@ const GhostBlob = ({ size = 2, speed = 3, lag = 0.05, opacity = 0.1, color: cust
 
 const GhostBackground = () => {
   const { theme } = useTasks();
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      mouseNDC.x = (e.clientX / window.innerWidth) * 2 - 1;
+      mouseNDC.y = -((e.clientY / window.innerHeight) * 2 - 1);
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      const touch = e.touches[0];
+      if (!touch) return;
+      mouseNDC.x = (touch.clientX / window.innerWidth) * 2 - 1;
+      mouseNDC.y = -((touch.clientY / window.innerHeight) * 2 - 1);
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('touchmove', handleTouchMove, { passive: true });
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('touchmove', handleTouchMove);
+    };
+  }, []);
+
   return (
     <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
       <Canvas camera={{ position: [0, 0, 10], fov: 50 }}>

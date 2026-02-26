@@ -1,15 +1,15 @@
 'use client';
 
 import React from 'react';
-import { 
-  LayoutGrid, 
-  Users, 
-  Layers, 
-  Calendar, 
-  Cloud, 
-  Hash, 
-  Settings, 
-  Plus, 
+import {
+  LayoutGrid,
+  Users,
+  Layers,
+  Calendar,
+  Cloud,
+  Hash,
+  Settings,
+  Plus,
   LogOut,
   Sun,
   Moon,
@@ -20,6 +20,8 @@ import TaskCube from './TaskCube';
 import TaskProgress3D from './TaskProgress3D';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -28,6 +30,7 @@ function cn(...inputs: ClassValue[]) {
 const Sidebar = () => {
   const { theme, setTheme, projects } = useTasks();
   const [isOpen, setIsOpen] = React.useState(false);
+  const pathname = usePathname();
 
   // Listen for custom event from Header
   React.useEffect(() => {
@@ -37,13 +40,13 @@ const Sidebar = () => {
   }, []);
 
   const navIcons = [
-    { icon: LayoutGrid, active: true },
+    { icon: LayoutGrid, href: '/' },
     { icon: Users },
     { icon: Calendar },
     { icon: Layers },
     { icon: Cloud },
     { icon: Hash },
-    { icon: Settings },
+    { icon: Settings, href: '/settings' },
   ];
 
   const projectsMenu = [
@@ -61,9 +64,9 @@ const Sidebar = () => {
   ];
 
   const sidebarClasses = cn(
-    "fixed inset-y-0 left-0 z-50 transition-transform duration-300 ease-in-out bg-white dark:bg-[#0D0D14] border-r border-gray-100 dark:border-gray-800",
-    "lg:static lg:translate-x-0 lg:w-[280px] lg:block",
-    isOpen ? "translate-x-0 w-full sm:w-[320px]" : "-translate-x-full w-0"
+    "fixed inset-y-0 left-0 z-50 transition-all duration-300 ease-in-out overflow-hidden bg-white dark:bg-[#0D0D14] border-r border-gray-100 dark:border-gray-800",
+    "lg:static lg:translate-x-0 lg:w-[280px] lg:shrink-0",
+    isOpen ? "translate-x-0 w-[85vw] sm:w-[320px]" : "-translate-x-full w-0 border-0"
   );
 
   return (
@@ -93,19 +96,24 @@ const Sidebar = () => {
             </div>
             
             <div className="flex flex-col gap-5 sm:gap-6">
-              {navIcons.map((item, i) => (
-                <button
-                  key={i}
-                  className={cn(
-                    "p-2 sm:p-2.5 rounded-xl transition-all",
-                    item.active 
-                      ? "bg-gray-800 text-white shadow-sm" 
-                      : "text-gray-500 hover:bg-gray-800/50 hover:text-gray-300"
-                  )}
-                >
-                  <item.icon className="w-5 h-5 sm:w-6 sm:h-6" />
-                </button>
-              ))}
+              {navIcons.map((item, i) => {
+                const isActive = item.href ? pathname === item.href : false;
+                const cls = cn(
+                  "p-2 sm:p-2.5 rounded-xl transition-all",
+                  isActive
+                    ? "bg-gray-800 text-white shadow-sm"
+                    : "text-gray-500 hover:bg-gray-800/50 hover:text-gray-300"
+                );
+                return item.href ? (
+                  <Link key={i} href={item.href} className={cls}>
+                    <item.icon className="w-5 h-5 sm:w-6 sm:h-6" />
+                  </Link>
+                ) : (
+                  <button key={i} className={cls}>
+                    <item.icon className="w-5 h-5 sm:w-6 sm:h-6" />
+                  </button>
+                );
+              })}
             </div>
 
             <div className="mt-auto">
