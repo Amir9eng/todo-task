@@ -1,12 +1,13 @@
 'use client';
 
+import React, { useMemo } from 'react';
 import { MoreHorizontal, MessageSquare, Paperclip, Plus } from 'lucide-react';
 import { useTasks } from '../context/TaskContext';
 import { Task, TaskStatus } from '../types';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
-import Background3D from './Background3D';
+import GhostBackground from './GhostBackground';
 
 const TaskCard = ({ task, index }: { task: Task; index: number }) => {
   const { updateTaskStatus } = useTasks();
@@ -109,6 +110,15 @@ const Board = () => {
     { title: 'Done', status: 'done', count: tasks.filter(t => t.status === 'done').length },
   ];
 
+  const totalTasks = tasks.length;
+  const taskOffset = useMemo(() => {
+    if (totalTasks === 0) return 0;
+    const todoCount = tasks.filter(t => t.status === 'todo').length;
+    const doneCount = tasks.filter(t => t.status === 'done').length;
+    // -1 for todo (left), 1 for done (right). Opposite of what user wants for the balls.
+    return (doneCount - todoCount) / totalTasks;
+  }, [tasks, totalTasks]);
+
   const onDragEnd = (result: DropResult) => {
     const { source, destination } = result;
     if (!destination) return;
@@ -124,11 +134,11 @@ const Board = () => {
 
   return (
     <DragDropContext onDragEnd={onDragEnd}>
-      <div className="flex-1 overflow-x-auto bg-[#F7F8FA] dark:bg-[#0D0D14] p-8 no-scrollbar relative">
-        <Background3D />
-        <div className="flex gap-8 h-full items-start min-w-max relative z-10">
+      <div className="flex-1 bg-[#F7F8FA] dark:bg-[#0D0D14] p-4 sm:p-8 no-scrollbar relative overflow-y-auto lg:overflow-x-auto">
+        <GhostBackground />
+        <div className="flex flex-col lg:flex-row gap-8 items-start relative z-10 w-full lg:w-max lg:min-w-max mx-auto lg:mx-0">
           {columns.map((column) => (
-            <div key={column.status} className="w-[360px] flex flex-col gap-6">
+            <div key={column.status} className="w-full lg:min-w-[360px] lg:w-[360px] flex flex-col gap-6">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-3">
                   <h3 className="font-bold text-[15px] text-gray-900 dark:text-white">{column.title} ({column.count})</h3>
